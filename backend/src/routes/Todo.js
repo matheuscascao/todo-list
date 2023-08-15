@@ -36,15 +36,18 @@ router.post("/", (req, res) => {
 })
 
 router.patch("/:title?", (req, res) => {
-    res.send({ data: "updated data"});
+  let itemTitle = req.query.title;
+  todoItem.findByIdAndUpdate({title: itemTitle}, req.body).then(() => {
+    res.status(200).json({ message: req.body.toJSON()});
+  }).catch((err) => res.status(500).json({ message: err }))
+  res.send({ data: "updated data"});
 })
 
 router.delete("/:title?", (req, res) => {
-  let todoItem = new todoItem(req.body);
   let title = req.query.title;
 
-  todoItem.findOneAndDelete({ title: title}).then( () => {
-    res.status(200).json({ message: "deleted todo item"});
+  todoItem.findOneAndDelete({ title: title }).then( () => {
+    res.status(200).json({ message: req.body.toJSON() });
   }).catch((err) => res.status(500).json({ message: err }))
 })
 
