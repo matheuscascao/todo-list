@@ -19,8 +19,7 @@ function checkItemStatus(title) {
 
 async function fetchListItems(status) {
   const response = await fetch(`${apiUrl}?status=${status}`);
-  const data = await response.json();
-  return data;
+    return await response.json();
 }
 
 async function updateTodoItems() {
@@ -37,42 +36,43 @@ async function createListItems() {
 }
 
 function createListItem(item) {
-  const listItem = document.createElement('li');
-  const div1 = document.createElement('div');
-  const div2 = document.createElement('div');
-  const div3 = document.createElement('div');
-  const h2 = document.createElement('h2');
-  const p = document.createElement('p');
-  
-  div1.classList.add('border-gradient');
-  listItem.appendChild(div1);
-  
-  if (item.status != 'done') {
-    const button = document.createElement('button');
-    button.classList.add('next');
-    button.setAttribute('type', 'button');
-    button.innerHTML = 'Next';
-    listItem.appendChild(button);
-  }
-  if (item.status == 'done') {
-    const button = document.createElement('button');
-    button.classList.add('next');
-    button.setAttribute('type', 'button');
-    button.innerHTML = 'Delete';
-    listItem.appendChild(button);
-    console.log("item: " + item.title)
-}
-  h2.classList.add('taskTitle');
-  h2.innerHTML = item.title;
-  div2.appendChild(h2);
-  listItem.appendChild(div2);
-  
-  p.classList.add('taskDescription');
-  p.innerHTML = item.description;
-  div3.appendChild(p);
-  listItem.appendChild(div3);
-  
-  return listItem;
+    const listItem = document.createElement('li');
+    const div1 = document.createElement('div');
+    const div2 = document.createElement('div');
+    const div3 = document.createElement('div');
+    const h2 = document.createElement('h2');
+    const p = document.createElement('p');
+
+    div1.classList.add('border-gradient');
+    listItem.appendChild(div1);
+
+    const buttonNext = document.createElement('button');
+    buttonNext.classList.add('next');
+    buttonNext.setAttribute('type', 'button');
+    String(item.status) !== 'done' ? buttonNext.innerHTML = 'Next' : buttonNext.innerHTML = 'Delete';
+    listItem.appendChild(buttonNext);
+
+    h2.classList.add('taskTitle');
+    h2.innerHTML = item.title;
+    div2.appendChild(h2);
+    listItem.appendChild(div2);
+
+    p.classList.add('taskDescription');
+    p.innerHTML = item.description;
+    div3.appendChild(p);
+    listItem.appendChild(div3);
+
+    if(String(item.status) !== 'to do') {
+        const buttonReturn = document.createElement('button');
+        buttonReturn.classList.add('return');
+        buttonReturn.setAttribute('type', 'button');
+        buttonReturn.innerHTML = 'Return';
+        listItem.appendChild(buttonReturn);
+    }
+
+    listItem.appendChild(div1);
+
+    return listItem;
 }
 
 function populateList(section, listData) {
@@ -86,69 +86,102 @@ function populateList(section, listData) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    createListItems();
+
+  createListItems();
   const modal = document.querySelector('dialog');
   
   document.getElementById('openModal').addEventListener('click', () => {
     modal.showModal();
   });
+  function isTitleAlreadyExists(title) {
+    const allTasks = [...todoItems.todo, ...todoItems.doing, ...todoItems.done];
+    return allTasks.some(task => task.title === title);
+  }
 
   document.getElementById('post').addEventListener('click', async event => {
-    const title = document.getElementById('taskTitle').value;
-    const description = document.getElementById('taskDescription').value;
+      const title = document.getElementById('taskTitle').value;
 
-    await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        title,
-        description,
-        status: ['to do']
-      })
-    });
+      if (title !== '' && title !== null && !isTitleAlreadyExists(title)) {
+
+          const description = document.getElementById('taskDescription').value;
+
+          await fetch(apiUrl, {
+              method: 'POST',
+              headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  title,
+                  description,
+                  status: ['to do']
+              })
+          });
+        }
   });
 
 });
 
-document.addEventListener('click', async event => { 
-    const listItem = event.target.closest('li');
-    const title = listItem.querySelector('.taskTitle').textContent;
-    const description = listItem.querySelector('.taskDescription').textContent;
-    
-    let actualStatus = checkItemStatus(title);
-    let nextStatus = ""
-    if (actualStatus === 'to do') {
-        nextStatus = 'doing';
-    } else if (actualStatus === 'doing') {
-        nextStatus = 'done';
+document.addEventListener('click', async event => {
+    const targetButton = event.target.closest('button');
+    if (targetButton) {
+        const listItem = targetButton.closest('li');
+        const title = listItem.querySelector('.taskTitle').textContent;
+        const description = listItem.querySelector('.taskDescription').textContent;
+        const action = targetButton.classList.contains('next') ? 'next' : 'return';
+        handleActionButtonClick(title, description, action);
     }
-    console.log("actualStatus: " + actualStatus)
-    console.log("nextStatus: " + nextStatus)
-
-    if(actualStatus != 'done') {
-        await fetch(`${apiUrl}?title=${title}`, {
-            method: 'PATCH',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                "title": title,
-                "description": description,
-                "status": nextStatus
-            })
-          });
-    } else {
-        await fetch(`${apiUrl}?title=${title}`, {
-            method: 'DELETE',
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
-          });
-    }
-      createListItems();
 });
+
+async function handleActionButtonClick(title, description, action) {
+    const actualStatus = checkItemStatus(title);
+    let newStatus = '';
+
+    if (action === 'next') {
+        newStatus = getNextStatus(actualStatus);
+    } else if (action === 'return') {
+        newStatus = getReturnStatus(actualStatus);
+    }
+
+    if (actualStatus === 'done' && action === 'next') {
+        await deleteTask(title);
+    } else {
+        await updateTaskStatus(title, description, newStatus);
+    }
+
+    createListItems();
+}
+
+function getReturnStatus(currentStatus) {
+    return currentStatus === 'done' ? 'doing' : 'to do';
+}
+
+function getNextStatus(currentStatus) {
+    return currentStatus === 'to do' ? 'doing' : 'done';
+}
+
+async function updateTaskStatus(title, description, status) {
+    await fetch(`${apiUrl}?title=${title}`, {
+        method: 'PATCH',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            "title": title,
+            "description": description,
+            "status": status
+        })
+    });
+}
+
+async function deleteTask(title) {
+    await fetch(`${apiUrl}?title=${title}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    });
+}
+
