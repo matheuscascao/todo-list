@@ -37,10 +37,9 @@ router.post("/", (req, res) => {
 
 router.patch("/:title?", (req, res) => {
   let itemTitle = req.query.title;
-  todoItem.findByIdAndUpdate({title: itemTitle}, req.body).then(() => {
+  todoItem.findOneAndUpdate({title: itemTitle}, req.body).then(() => {
     res.status(200).json({ message: req.body.toJSON()});
   }).catch((err) => res.status(500).json({ message: err }))
-  res.send({ data: "updated data"});
 })
 
 router.delete("/:title?", (req, res) => {

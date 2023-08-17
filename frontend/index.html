@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>toDoList</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="script.js"></script>
+</head>
+<body>
+<main>
+
+	<h1>toDoList</h1>
+
+	<button id="openModal">
+	  Adicionar
+	</button>
+
+	<dialog>
+	  <form id="taskForm">
+		  <label for="taskTitle">Adicionar título</label>
+	      <input id="taskTitle" type="text" name="title" placeholder="Enter title">
+	      <label for="taskTitle">Adicionar descrição</label>
+		  <input id="taskDescription" type="text" name="task" placeholder="Enter decription">
+		  <button type="submit" id="post">Enviar</button>
+		  <button value="cancel">Cancel</button>
+	  </form>
+	</dialog>
+
+	<div id="container" style="">
+		<div id="todo">
+			<h3>
+			    To Do
+			</h3>
+		    <ol id="todoList">
+			    <li>
+                    <div class="border-gradient"></div>
+                    <button type="button" class="next">></button>
+				    <div>
+					    <h2 class="taskTitle">Title</h2>
+					    <p class="taskDescription">Content</p>
+				    </div>
+				    <div class="border-gradient"></div>
+			    </li>
+		    </ol>
+		</div>
+		<div id="doing">
+			<h3>
+				Doing
+			</h3>
+			<ol id="doingList">
+			    <li>
+				    <div class="border-gradient"></div>
+				    <div></div>
+				    <div class="border-gradient"></div>
+			    </li>
+			</ol>
+		</div>
+		<div id="done">
+			<h3>
+				Done
+			</h3>
+			<ol id="doneList">
+			    <li>
+					<div class="border-gradient"></div>
+				    <div></div>
+				    <div class="border-gradient"></div>
+			    </li>
+		    </ol>
+		</div>
+	</div>
+
+</main>
+</body>
+</html>
