@@ -2,8 +2,7 @@
 import mongoose from "mongoose"
 import dotenv from "dotenv"
 dotenv.config();
-
-mongoose.connect(`mongodb+srv://todo-admin:${process.env.mongoDbConnectionPassword}@todo-db.us27znk.mongodb.net/todo-db`)
+mongoose.connect(`mongodb+srv://${process.env.mongoDbConnectionLogin}:${process.env.mongoDbConnectionPassword}@todo-db.yfdiwm5.mongodb.net/todo-db`)
 
 const db = mongoose.connection;
 
